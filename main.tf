@@ -156,3 +156,14 @@ resource "aws_key_pair" "hashicat" {
   key_name   = local.private_key_filename
   public_key = tls_private_key.hashicat.public_key_openssh
 }
+
+check "health_check" {
+  data "http" "catapp_url" {
+    url = "http://${aws_eip.hashicat.public_dns}"
+  }
+
+  assert {
+    condition = data.http.catapp_url.status_code == 200
+    error_message = "${data.http.catapp_url.url} returned an unhealthy status code"
+  }
+}
